@@ -1,4 +1,5 @@
 # SQL50
+###### tags: `SQL`
 
 1. **:star: 查詢課程編號為“01”的課程比“02”的課程成績高的所有學生的學號、姓名**
     ```sql
@@ -224,4 +225,23 @@
     ```
     ![](https://i.imgur.com/rKyCVow.png)
 
-22. 
+22. **查詢所有課程的成績第2名到第3名的學生信息及該課程成績**
+
+    >用FROM Subquery的方式，可以將RANK設成WHERE的條件來篩選出2、3名
+    ```sql
+    SELECT *
+    FROM (
+        SELECT s.s_id, s.s_name, sc.c_id, sc.s_score, Dense_Rank() OVER (PARTITION BY sc.c_id ORDER BY sc.s_score DESC) AS [RANK]
+        FROM student s JOIN score sc ON s.s_id = sc.s_id) AS sub
+    WHERE sub.[RANK] in (2,3)
+
+    -- Dense_Rank() > 若有同個排名，之後仍繼續。(EX:有兩個第一名，下一個會是第二名，不會跳三)
+    ```
+    ![](https://i.imgur.com/IZ8qr3B.png)
+
+
+
+
+
+
+<style>.markdown-body { max-width: 1080px; }</style>
