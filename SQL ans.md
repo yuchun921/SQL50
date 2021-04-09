@@ -225,7 +225,7 @@
     ```
     ![](https://i.imgur.com/rKyCVow.png)
 
-22. **查詢所有課程的成績第2名到第3名的學生信息及該課程成績**
+22. **:star: 查詢所有課程的成績第2名到第3名的學生信息及該課程成績**
 
     >用FROM Subquery的方式，可以將RANK設成WHERE的條件來篩選出2、3名
     ```sql
@@ -239,9 +239,105 @@
     ```
     ![](https://i.imgur.com/IZ8qr3B.png)
 
+23. **:star: 統計各科成績各分數段人數：課程編號,課程名稱,[100-85],[85-70],[70-60],[0-60]及所佔百分比**
+```sql
+SELECT sc.c_id, c.c_name, count(sc.s_id) AS [Num of Student],
+SUM(CASE WHEN sc.s_score<60 THEN 1 else 0 END) AS [0-59],
+SUM(CASE WHEN sc.s_score<60 THEN 1.0 else 0.0 END) /COUNT(sc.s_id) AS [0-59 percentage],
+SUM(CASE WHEN sc.s_score>=60 AND sc.s_score < 70 THEN 1 else 0 END) AS [60-69],
+SUM(CASE WHEN sc.s_score>=60 AND sc.s_score < 70 THEN 1.0 else 0.0 END)/COUNT(sc.s_id) AS [60-69 percentage],
+SUM(CASE WHEN sc.s_score>=70 AND sc.s_score < 85 THEN 1 else 0 END) AS [70-84],
+SUM(CASE WHEN sc.s_score>=70 AND sc.s_score < 85 THEN 1.0 else 0.0 END)/COUNT(sc.s_id) AS [70-84 percentage],
+SUM(CASE WHEN sc.s_score>=85 AND sc.s_score <= 100 THEN 1 else 0 END) AS [85-100],
+SUM(CASE WHEN sc.s_score>=85 AND sc.s_score <= 100 THEN 1.0 else 0.0 END)/COUNT(sc.s_id) AS [85-100 percentage]
+FROM score sc JOIN course c ON sc.c_id = c.c_id
+GROUP BY sc.c_id, c.c_name
+```
+![](https://i.imgur.com/oMZkexq.png)
 
+24. **:star: 查詢學生平均成績及其名次**
+```sql
+SELECT s.s_id, s.s_name, AVG(sc.s_score), DENSE_RANK() OVER(ORDER BY AVG(sc.s_score) DESC) AS [RANK]
+FROM student s LEFT JOIN score sc ON s.s_id = sc.s_id
+GROUP BY s.s_id, s.s_name
+```
+![](https://i.imgur.com/cU0mve7.png)
 
+25. **查詢各科成績前三名的記錄**
+    ```sql
+    SELECT * FROM (
+        SELECT s.s_id, s.s_name, sc.c_id, sc.s_score, ROW_NUMBER() OVER(PARTITION BY sc.c_id ORDER BY sc.s_score DESC) AS [RANK]
+        FROM student s JOIN score sc ON s.s_id =sc.s_id ) AS SUB
+    WHERE [RANK] < 4
+    ```
+    ![](https://i.imgur.com/uIh146H.png)
 
+26. **查詢每門課程被選修的學生數**
+    ```sql
+    SELECT c.c_name, COUNT(sc.s_id) AS [選修人數]
+    FROM course c join score sc ON c.c_id =sc.c_id
+    GROUP BY c.c_name
+    ```
+    ![](https://i.imgur.com/yRpFbse.png)
 
+27. **查詢出只選修了一門課程的全部學生的學號和姓名**
+    ```sql
+    SELECT s.s_id, s.s_name, COUNT(s.s_id) AS [課程數量]
+    FROM student s LEFT JOIN score sc ON s.s_id = sc.s_id
+    GROUP BY s.s_id, s.s_name
+    HAVING COUNT(s.s_id) = 1
+    ```
+    ![](https://i.imgur.com/uTNiEik.png)
 
+28. **查詢男生、女生人數**
+    ```sql
+    SELECT s_sex, COUNT(s_sex) AS [男女人數]
+    FROM student
+    GROUP BY s_sex
+    ```
+    ![](https://i.imgur.com/kjal6lA.png)
+
+29. **查詢名字中含有”風”字的學生信息**
+    ```sql
+    SELECT *
+    FROM student
+    WHERE s_name like '%風%'
+    ```
+    ![](https://i.imgur.com/cyZs5IU.png)
+
+30. **查詢同名同性學生名單，並統計同名人數**
+    ```sql
+    SELECT s_id, s_name, COUNT(s_sex) AS [是否同名同性別]
+    FROM student
+    GROUP BY s_id, s_name
+    ```
+    ![](https://i.imgur.com/gUIhAA9.png)
+
+31. **查詢1990年出生的學生名單**
+    ```sql
+    SELECT s_name, s_birth 
+    FROM student 
+    WHERE YEAR(s_birth) = 1990
+    ```
+    ![](https://i.imgur.com/x0ieuId.png)
+
+32. ****
+33. ****
+34. ****
+35. ****
+36. ****
+37. ****
+38. ****
+39. ****
+40. ****
+41. ****
+42. ****
+43. ****
+44. ****
+45. ****
+46. ****
+47. ****
+48. ****
+49. ****
+50. ****
 <style>.markdown-body { max-width: 1080px; }</style>
