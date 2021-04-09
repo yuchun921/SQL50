@@ -321,23 +321,139 @@ GROUP BY s.s_id, s.s_name
     ```
     ![](https://i.imgur.com/x0ieuId.png)
 
-32. ****
-33. ****
-34. ****
-35. ****
-36. ****
-37. ****
-38. ****
-39. ****
-40. ****
-41. ****
-42. ****
-43. ****
-44. ****
-45. ****
-46. ****
+32. **查詢每門課程的平均成績，結果按平均成績升序排列，平均成績相同時，按課程號降序排列**
+    ```sql
+    SELECT c.c_name, AVG(sc.s_score) AS [Avg Score]
+    FROM course c JOIN score sc ON c.c_id = sc.c_id
+    GROUP BY c.c_name, c.c_id
+    ORDER BY AVG(sc.s_score) ASC, c.c_id DESC;
+    ```
+    ![](https://i.imgur.com/VJxYcH7.png)
+
+33. **查詢不及格的課程，並按課程號從大到小排列**
+    ```sql
+    SELECT s.s_name, sc.c_id, c.c_name, sc.s_score
+    FROM student s LEFT JOIN score sc ON s.s_id = sc.s_id
+    JOIN course c ON sc.c_id = c.c_id
+    WHERE sc.s_score < 60
+    ORDER BY sc.c_id DESC;
+    ```
+    ![](https://i.imgur.com/wT0BGn6.png)
+
+34. **查詢課程編號為”01”且課程成績在60分以上的學生的學號和姓名**
+    ```sql
+    SELECT s.s_id, s.s_name, sc.s_score
+    FROM student s LEFT JOIN score sc ON s.s_id = sc.s_id
+    WHERE sc.c_id = '01' AND sc.s_score >= 60
+    ```
+    ![](https://i.imgur.com/SPDHgia.png)
+
+35. **:star: 查詢所有學生的課程及分數情況**
+    
+    ???????
+    
+36. **查詢任何一門課程成績在70分以上的姓名、課程名稱和分數**
+    ```sql
+    SELECT s.s_name, c.c_name, sc.s_score
+    FROM student s JOIN score sc ON s.s_id = sc.s_id
+    JOIN course c ON sc.c_id = c.c_id
+    WHERE sc.s_score >= 70
+    ```
+    ![](https://i.imgur.com/txM63tQ.png)
+
+37. **查詢課程名稱為”數學”，且分數低於60的學生姓名和分數**
+    ```sql
+    SELECT s.s_name, sc.s_score
+    FROM student s JOIN score sc ON s.s_id = sc.s_id
+    JOIN course c ON sc.c_id = c.c_id
+    WHERE c.c_name = '數學' AND sc.s_score < 60
+    ```
+    ![](https://i.imgur.com/VCqVk8D.png)
+
+38. **查詢課程編號為03且課程成績在80分以上的學生的學號和姓名**
+    ```sql
+    SELECT s.s_id, s.s_name, sc.s_score
+    FROM student s JOIN score sc ON s.s_id = sc.s_id
+    JOIN course c ON sc.c_id = c.c_id
+    WHERE sc.c_id = '03' AND sc.s_score >= 80
+    ```
+    ![](https://i.imgur.com/g6qbl0c.png)
+
+39. **求每門課程的學生人數** (跟Q26.一樣)
+
+40. **查詢選修“張三”老師所授課程的學生中，成績最高的學生姓名及其成績**
+    ```sql
+    SELECT TOP 1 s.s_name, sc.s_score
+    FROM student s JOIN score sc ON s.s_id = sc.s_id
+    JOIN course c ON sc.c_id = c.c_id
+    JOIN teacher t ON c.t_id =t.t_id
+    WHERE t.t_name = '張三'
+    ```
+    ![](https://i.imgur.com/NVSi8Nm.png)
+
+41. **:star: 查詢不同課程成績相同的學生的學生編號、課程編號、學生成績**
+    ```sql
+    SELECT DISTINCT sc1.s_id, s.s_name, sc1.c_id, sc1.s_score
+    FROM student s JOIN score sc1 ON s.s_id = sc1.s_id
+    JOIN score sc2 ON s.s_id = sc2.s_id
+    WHERE sc1.c_id != sc2.c_id AND sc1.s_score = sc2.s_score
+    ```
+    ![](https://i.imgur.com/2rv8U2D.png)
+
+42. **查詢每門功課成績最好的前兩名** (同 Q22, Q25)
+    ```sql
+    -- DENSE RANK()
+
+    SELECT * FROM (
+        SELECT s.s_id, s.s_name, sc.c_id, sc.s_score, DENSE_RANK() OVER (PARTITION BY sc.c_id ORDER BY sc.s_score DESC) AS [RANK]
+        FROM student s JOIN score sc ON s.s_id = sc.s_id) AS SUB
+    WHERE [RANK] IN (1,2)
+    ```
+    ![](https://i.imgur.com/GZcqLYo.png)
+
+43. **統計每門課程的學生選修人數（超過5人的課程才統計）。要求輸出課程號和選修人數，查詢結果按人數降序排列，若人數相同，按課程號升序排列** (同 Q26, Q39)
+    ```sql
+    SELECT c_id, count(s_id) AS [選課人數]
+    FROM score
+    GROUP BY c_id
+    HAVING count(s_id) > 5
+    ORDER BY count(s_id) DESC, c_id ASC;
+    ```
+    ![](https://i.imgur.com/nVgxCvc.png)
+
+44. **檢索至少選修兩門課程的學生資訊** (同 Q27)
+    ```sql
+    SELECT s.s_id, s.s_name, COUNT(s.s_id) AS [課程數量]
+    FROM student s LEFT JOIN score sc ON s.s_id = sc.s_id
+    GROUP BY s.s_id, s.s_name
+    HAVING COUNT(s.s_id) >= 2
+    ```
+    ![](https://i.imgur.com/wZtgIeo.png)
+
+45. **查詢選修了全部課程的學生信息** (同 Q10, Q27, Q44)
+    ```sql
+    -- Solution 1
+    SELECT s.s_id, s.s_name
+    FROM student s LEFT JOIN score sc ON s.s_id = sc.s_id
+    GROUP BY s.s_id, s.s_name
+    HAVING COUNT(sc.c_id) = 3 --共三門課
+
+    -- Solution 2
+    SELECT s.s_id, s.s_name
+    FROM student s LEFT JOIN score sc ON s.s_id = sc.s_id
+    GROUP BY s.s_id, s.s_name
+    HAVING COUNT(sc.c_id) = (SELECT COUNT(c_id) FROM course)
+    ```
+    ![](https://i.imgur.com/4xSz0Ik.png)
+
+46. **查詢每個學生的年齡**
+    ```sql
+    SELECT s_id, s_name, YEAR(getdate())-YEAR(s_birth) AS [Age]
+    FROM student
+    ```
+    ![](https://i.imgur.com/Guhb9wU.png)
+
 47. ****
 48. ****
 49. ****
 50. ****
-<style>.markdown-body { max-width: 1080px; }</style>
